@@ -61,8 +61,10 @@ func (l *Logger) ToBoth(level string, msg string) {
 
 // ToFile logs a message to the file with level-based formatting
 func (l *Logger) ToFile(level string, msg string) {
-	formatted := l.format(level, msg, false)
-	l.fileLogger.Println(formatted)
+	if l.fileLogger != nil {
+		formatted := l.format(level, msg, false)
+		l.fileLogger.Println(formatted)
+	}
 }
 
 // ToScreen logs a message to stdout with color-coded level formatting
