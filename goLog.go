@@ -25,16 +25,27 @@ type Logger struct {
 	startTime		time.Time
 }
 
-// New creates a logger that writes to both stdout and a file
+// New creates a logger that writes to both stdout and a file (when present)
 func New(logFilePath string) (*Logger, error) {
-	file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil { return nil, err }
+	var fileLogger *log.Logger
+
+	if logFilePath != "" {
+		file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return nil, err
+		}
+		fileLogger = log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile)
+	}
+
+	// Always create a screen logger
+	screenLogger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	return &Logger{
-		fileLogger:   log.New(file, "", log.Ldate|log.Ltime|log.Lshortfile),
-		screenLogger: log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		fileLogger:   fileLogger,
+		screenLogger: screenLogger,
 	}, nil
 }
+
 
 func (l *Logger) Fatal(logFn func(level, msg string), format string, v ...any) {
     msg := fmt.Sprintf(format, v...)
